@@ -1,7 +1,7 @@
 // demo.js test - copied from example 1 (rotating bunny)
 
 /* TODO
-- make only redraw stuff when necessary
+- only redraw highlights when necessary
 */
 
 var WIDTH  = window.innerWidth,
@@ -14,9 +14,7 @@ var stage = new PIXI.Stage(0x66FF99, interactive);
 stage.click = insert_rectangle;
 
 // create a renderer instance
-//var renderer = PIXI.autoDetectRenderer(WIDTH, HEIGHT);
-//var renderer = new PIXI.WebGLRenderer(WIDTH, HEIGHT);
-var renderer = new PIXI.CanvasRenderer(WIDTH, HEIGHT);
+var renderer = PIXI.autoDetectRenderer(WIDTH, HEIGHT);
 
 // add the renderer view element to the DOM
 document.body.appendChild(renderer.view);
@@ -57,8 +55,6 @@ function animate() {
 
 // draw the bounds of the quadtree
 function draw_qt() {
-  // just need to draw a rectangle for every child, top-down
-  // hmm, easier to just add a small drawing function to QNode? ehhh.
   qt_rect.clear();
   qt_rect.x = viewrect.x; qt_rect.y = viewrect.y;
   qt.root.draw(qt_rect);
@@ -84,26 +80,24 @@ function insert_rectangle(mouseData) {
 
 // when mouse over part of quadtree, highlight those things
 function highlight_rects() {
-  // TODO: Move this stuff out of here to a demo file for quadtree?
-  //       or just copy into a demo to keep for later...
-  // should recolor all default color, then color highlighted ones different?
-  // instead of redrawing everything all the time
   var all = qt.query(null, false);
   var mouse = stage.getMousePosition();
+  // specifically ask for no filtering
   var ids = qt.query({x:mouse.x-viewrect.x, y:mouse.y-viewrect.y,
 		      w:1, h:1}, false);
-  
+
+  // recolor everything
   for (var i=0; i < all.length; i++) {
     var obj = qt.obj_ids[all[i]];
     obj.rect.clear();
     obj.rect.beginFill(0x0077AA);
     obj.rect.drawRect(obj.x+viewrect.x, obj.y+viewrect.y, obj.w, obj.h);
   }
+  // 'highlight' moused-over nodes
   for (var i=0; i < ids.length; i++) {
     var obj = qt.obj_ids[ids[i]];
     obj.rect.clear();
     obj.rect.beginFill(0xFF0000);
-    //obj.rect.drawRect(obj.x, obj.y, obj.w, obj.h);
     obj.rect.drawRect(obj.x+viewrect.x, obj.y+viewrect.y, obj.w, obj.h);
   }
 };
