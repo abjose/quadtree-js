@@ -5,18 +5,12 @@
 - replace max_objects with refine_thresh and coarsen_thresh
 - currently can violate max_depth via expand - worth fixing?
 - consider adding coarsen-topdown back in
-- wait, aren't you supposed to have a hash of tags at each leaf?
-  I guess reasonable to not include that here, but wrap quadtree to it can
-  do that stuff - so maybe this code will actually be useful to someone else.
 - allow quadtree to shrink if don't need to be as large as it is? i.e. have a 
   spatial "contract" in addition to "expand"
 - DO THIS should allow functions to take lists of things and/or multiple args
-- remember to update datastructures...
 - search for and complete TODOs
 - clean up node addition/deletion in general - lots of repetition right now
-- split quadtree / tests/ demo out into own repo
   also split out quadtree and QNode and 'helper' code? maybe more annoying...
-- something going wrong with expand - seem to lose track of nodes
 - fully taken advantage of objects being in graph only once?
 - sure obj_to_node being used correctly?
 - filter_region still very slow
