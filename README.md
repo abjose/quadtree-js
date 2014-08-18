@@ -19,8 +19,7 @@ If these don't sound like things you'll need, consider using a different library
 ## Demo
 
 A JSFiddle of examples/demo.html:
-http://jsfiddle.net/6dk62byy/
-
+http://jsfiddle.net/6dk62byy/2/
 
 ## Usage
 
