@@ -25,6 +25,7 @@ http://jsfiddle.net/6dk62byy/
 ## Usage
 
 Make a quadtree:
+
     var qt = new Quadtree({x: 0,
                            y: 0,
                            w: 100,
@@ -34,6 +35,7 @@ Make a quadtree:
 			   });
 
 Insert an AABB:
+
     qt.insert({x: 5,
                y: 5,
                w: 10,
@@ -41,6 +43,7 @@ Insert an AABB:
                id: 'test'});
 
 Query the quadtree:
+
     qt.query(); // queries the entire quadtree
 
     qt.query({x: 0,
@@ -49,6 +52,7 @@ Query the quadtree:
               h: 10});
 
 Remove objects from the quadtree:
+
     qt.remove_by_id('test'); // removes the object with id 'test'
 
     qt.remove_by_region({x: 0,
@@ -57,4 +61,5 @@ Remove objects from the quadtree:
                          h: 10}); // remove objects overlapping a region
 
 Clear the quadtree:
+
     qt.clear();
