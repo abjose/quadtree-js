@@ -5,8 +5,7 @@
 */
 
 var WIDTH  = window.innerWidth,
-HEIGHT = window.innerHeight;
-var WEIRD_PADDING = 10;
+    HEIGHT = window.innerHeight;
 
 // create a new instance of a pixi stage
 var interactive = true;
@@ -21,9 +20,7 @@ var renderer = new PIXI.CanvasRenderer(WIDTH, HEIGHT);
 
 // add the renderer view element to the DOM
 document.body.appendChild(renderer.view);
-
 requestAnimFrame(animate);
-
 
 // quadtree stuff
 var qt = new Quadtree({x:150, y:320, w:100, h:100});
@@ -40,10 +37,10 @@ viewrect.h = HEIGHT;
 window.addEventListener('keydown', function(event) {
   event.preventDefault();
   switch (event.keyCode) {
-  case 37: viewrect.x -= 5; break; // left
-  case 38: viewrect.y -= 5; break; // up
-  case 39: viewrect.x += 5; break; // right
-  case 40: viewrect.y += 5; break; // down
+  case 37: viewrect.x -= 15; break; // left
+  case 38: viewrect.y -= 15; break; // up
+  case 39: viewrect.x += 15; break; // right
+  case 40: viewrect.y += 15; break; // down
   }
 }, false);
 
