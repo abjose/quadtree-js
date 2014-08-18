@@ -13,7 +13,7 @@ along with a few additional features:
 * **objects are kept at their minimal containing node** (large objects are typically 'broken down' to be stored in the leaves of the tree, but this can make things extremely slow - instead, objects are stored only once in the tree, at the smallest node that fully contains them)
 * **expands to accommodate external objects**
 
-If these don't sound like things you'll need, consider using a different library, or at least compare insertion/deletion speeds for your use case (I'd love to hear what you find!).
+If these don't sound like things you'll need, consider using a different library, or at least comparing insertion/deletion performance for your use case with that of other libraries (I'd love to hear what you find!).
 
 
 ## Demo
