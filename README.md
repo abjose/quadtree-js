@@ -32,7 +32,7 @@ Make a quadtree:
                            h: 100,
                            max_objects: 150, // optional
                            max_levels:  10;  // optional
-			   });
+                           });
 
 Insert an AABB:
 
