@@ -11,7 +11,7 @@ along with a few additional features:
 * **filters spatial queries by default** (only returns objects you ask for, rather than every object in every overlapping node)
 * **constant-time object-to-node lookups** (makes deletion fast, and useful if objects are moving around within the quadtree)
 * **objects are kept at their minimal containing node** (large objects are typically 'broken down' to be stored in the leaves of the tree, but this can make things extremely slow - instead, objects are stored only once in the tree, at the smallest node that fully contains them)
-* **expands to accommodate external objects**
+* **expands to accommodate objects external to tree bounds**
 
 If these don't sound like things you'll need, consider using a different library, or at least comparing insertion/deletion performance for your use case with that of other libraries (I'd love to hear what you find!).
 
