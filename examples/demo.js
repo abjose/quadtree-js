@@ -1,5 +1,3 @@
-// demo.js test - copied from example 1 (rotating bunny)
-
 /* TODO
 - only redraw highlights when necessary
 */
