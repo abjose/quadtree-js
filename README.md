@@ -21,6 +21,8 @@ If these don't sound like things you'll need, consider using a different library
 A JSFiddle of examples/demo.html:
 http://jsfiddle.net/6dk62byy/2/
 
+Note that, due to objects being stored in their 'minimal containing node', objects lying on the border of node regions will actually be stored one level higher in the tree. You can see this in the demo by placing a point on the boundary of a node - it should be highlighted whenever that node's parent is moused over.
+
 ## Usage
 
 Make a quadtree:
