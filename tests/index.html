@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>pixi tests</title>
+    <style>
+      body {
+      margin: 0;
+      padding: 0;
+      #background-color: #000000;
+      }
+      #textbox {
+      position: absolute;
+      top: 20px;
+      left: 50px;
+      width:  75px;
+      height: 75px;
+      font-family: "Courier New";
+      font-size: 12px;
+      background-color: transparent;
+      border: none;
+      }
+      #textbox:focus {
+      outline: none;
+      border: none;
+      }
+    </style>
+    <script src="jquery.js" defer></script>
+    <script src="markdown.js" defer></script>
+    <script src="rasterizeHTML.allinone.js" defer></script>
+    <script src="quadtree.js" defer></script>
+    <script src="pixi.dev.js" defer></script>
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    
+    <!--<div id="textbox" contenteditable="true">test</div>-->
+    <div id="canvasbox"></div>
+    <textarea id="textbox">Type **Markdown** here.</textarea>
+  </body>
+</html>
+  
