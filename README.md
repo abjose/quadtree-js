@@ -2,16 +2,16 @@
 
 This is a slightly optimized javascript implementation of a [quadtree](http://en.wikipedia.org/wiki/Quadtree) datastructure. It's very similar to the other JS quadtree libraries floating around, meaning it:
 
-* is a quadtree
-* stores [AABBs](http://en.wikipedia.org/wiki/Bounding_box#Axis-aligned_minimum_bounding_box)
+* **is a quadtree**
+* **stores [AABBs](http://en.wikipedia.org/wiki/Bounding_box#Axis-aligned_minimum_bounding_box)**
 
 along with a few additional features:
 
-* can 'coarsen' (when you remove objects, the quadtree handles updating its structure rather than needing to be rebuilt each time)
-* filters spatial queries by default (only returns objects you ask for, rather than every object in every overlapping node)
-* constant-time object-to-node lookups (makes deletion fast, and useful if objects are moving around within the quadtree)
-* objects are kept at their minimal containing node (large objects are typically 'broken down' to be stored in the leaves of the tree, but this can make things extremely slow - instead, objects are stored only once in the tree, at the smallest node that fully contains them)
-* expands to accommodate external objects
+* **can 'coarsen'** (when you remove objects, the quadtree handles updating its structure rather than needing to be rebuilt each time)
+* **filters spatial queries by default** (only returns objects you ask for, rather than every object in every overlapping node)
+* **constant-time object-to-node lookups** (makes deletion fast, and useful if objects are moving around within the quadtree)
+* **objects are kept at their minimal containing node** (large objects are typically 'broken down' to be stored in the leaves of the tree, but this can make things extremely slow - instead, objects are stored only once in the tree, at the smallest node that fully contains them)
+* **expands to accommodate external objects**
 
 If these don't sound like things you'll need, consider using a different library, or at least compare insertion/deletion speeds for your use case (I'd love to hear what you find!).
 
