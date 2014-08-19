@@ -1,6 +1,7 @@
 "use strict";
 
 /*
+- remember dependency on jquery!! should note in repo
 - add to query - extra argument that allows query to stop when size of nodes
   gets too small (i.e. things would be too small to render anyway) so will have
   less scale-based filtering to do
@@ -40,7 +41,7 @@ function Quadtree(args) {
   // root of quadtree
   this.root = new QNode({x:args.x, y:args.y, w:args.w, h:args.h,
 			 level:0, parent:null, quadtree:this});
-};
+}
 
 // attempt to insert passed object (with x,y,w,h,id properties)
 Quadtree.prototype.insert = function(obj) {
@@ -119,7 +120,7 @@ function QNode(args) {
   this.ids = {};
   this.ids.refineable = {};   // ids that could be sent to a child
   this.ids.unrefineable = {}; // ids that must stay at this level
-};  
+}
 
 // attempt to insert object with given id into quadtree
 QNode.prototype.insert = function(id) {
@@ -357,7 +358,7 @@ function overlaps2(r1, r2) {
 
   // overlapping if too close not to be
   return (dx < x_sum) && (dy < y_sum);
-};
+}
 
 // http://stackoverflow.com/questions/306316/determine-if-two-rectangles-overlap-each-other
 function overlaps(r1, r2) {
@@ -384,14 +385,14 @@ function get_child_regions(region) {
 	  2: {x:region.x+hw, y:region.y,    w:hw, h:hh},  // upper-right
 	  3: {x:region.x,    y:region.y+hh, w:hw, h:hh},  // lower-left
 	  4: {x:region.x+hw, y:region.y+hh, w:hw, h:hh}}; // lower-right
-};
+}
 
 // return -1 or the index of the accepting child
 function get_accepting_child(node, region) {
   var c = get_child_regions(node);
   return -1 + 1*contains(c[1], region) + 2*contains(c[2], region) +
     3*contains(c[3], region) + 4*contains(c[4], region);
-};
+}
 
 // generate a random 'guid'
 // stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
@@ -403,4 +404,4 @@ function UUID(){
     return (c=='x' ? r : (r&0x7|0x8)).toString(16);
   });
   return uuid;
-};
+}
