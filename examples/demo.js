@@ -67,7 +67,7 @@ function animate() {
 
     // render the stage
     renderer.render(stage);
-};
+}
 
 // draw the bounds of the quadtree
 function draw_qt() {
@@ -75,7 +75,7 @@ function draw_qt() {
     qt_rect.x = viewrect.x;
     qt_rect.y = viewrect.y;
     qt.root.draw(qt_rect);
-};
+}
 
 // insert a rectangle wherever we click
 function insert_rectangle(mouseData) {
@@ -98,7 +98,7 @@ function insert_rectangle(mouseData) {
 
     // insert into quadtree!
     qt.insert(qt_obj);
-};
+}
 
 // when mouse over part of quadtree, highlight those things
 function highlight_rects() {
@@ -126,4 +126,4 @@ function highlight_rects() {
         obj.rect.beginFill(0xFF0000);
         obj.rect.drawRect(obj.x + viewrect.x, obj.y + viewrect.y, obj.w, obj.h);
     }
-};
+}
