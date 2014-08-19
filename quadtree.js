@@ -1,6 +1,10 @@
 "use strict";
 
 /*
+- add to query - extra argument that allows query to stop when size of nodes
+  gets too small (i.e. things would be too small to render anyway) so will have
+  less scale-based filtering to do
+- originally going to have hash of tags at each node - still do?
 - check to see if 'coarsen' leads to memory leaks
 - replace max_objects with refine_thresh and coarsen_thresh
 - currently can violate max_depth via expand - worth fixing?
