@@ -1,9 +1,6 @@
 "use strict";
 
 /*
-- add to query - extra argument that allows query to stop when size of nodes
-  gets too small (i.e. things would be too small to render anyway) so will have
-  less scale-based filtering to do
 - add stuff to help with updating objects - can just pass object (or ID), 
   will look up relevant node, figure out if need to change, then...just
   delete and reinsert if so?
@@ -14,8 +11,7 @@
 - consider adding coarsen-topdown back in
 - allow quadtree to shrink if don't need to be as large as it is? i.e. have a 
   spatial "contract" in addition to "expand"
-- DO THIS should allow functions to take lists of things and/or multiple args
-- search for and complete TODOs
+- should allow functions to take lists of things and/or multiple args
 - clean up node addition/deletion in general - lots of repetition right now
   also split out quadtree and QNode and 'helper' code? maybe more annoying...
 - fully taken advantage of objects being in graph only once?
