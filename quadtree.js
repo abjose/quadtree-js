@@ -5,7 +5,10 @@
 - add to query - extra argument that allows query to stop when size of nodes
   gets too small (i.e. things would be too small to render anyway) so will have
   less scale-based filtering to do
-- originally going to have hash of tags at each node - still do?
+- add stuff to help with updating objects - can just pass object (or ID), 
+  will look up relevant node, figure out if need to change, then...just
+  delete and reinsert if so?
+- originally going to have hash of surface tags at each node - still do?
 - check to see if 'coarsen' leads to memory leaks
 - replace max_objects with refine_thresh and coarsen_thresh
 - currently can violate max_depth via expand - worth fixing?
