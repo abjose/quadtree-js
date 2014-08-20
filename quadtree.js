@@ -29,7 +29,8 @@
 */
 
 /* Filtering todo
-- 
+- allow query to take SINGLE filter function
+- ...use that to filter.
 
 */
 
@@ -192,7 +193,9 @@ QNode.prototype.coarsen = function() {
   if (this.children.length === 0) return;
   
   // grab ids contained by (only) children
-  var ids = this.query(null, null, true);
+  var ids = [].concat.apply([], this.children.map( function(c) {
+    return c.get_ids();
+  }));
   
   // do we need to coarsen?
   if (ids.length <= this.quadtree.max_objects) {
@@ -229,11 +232,10 @@ QNode.prototype.expand = function(id) {
 };
 
 // return a list of objects located in the given region
-QNode.prototype.query = function(region, filter, children_only) {
+QNode.prototype.query = function(region, filter) {
   // set defaults
   region = region || {x:this.x, y:this.y, w:this.w, h:this.h};
   filter = typeof filter !== 'undefined' ? filter : true;
-  children_only = typeof children_only !== 'undefined' ? filter : false;
   
   // don't return anything if outside query region
   if (!this.overlaps(region)) return [];
@@ -243,9 +245,6 @@ QNode.prototype.query = function(region, filter, children_only) {
     function(c) { return c.query(region, filter); }
   ));
 
-  // don't add on own ids if children_only
-  if (children_only) return ids;
-  
   // otherwise add on own objects
   if (!filter) return ids.concat(this.get_ids());
   return ids.concat(filter_region(this.get_ids(), region,
