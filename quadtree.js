@@ -88,11 +88,19 @@ Quadtree.prototype.remove_by_id = function(id) {
   delete this.obj_ids[id];
 };
 
+// remove all elements returned by a query with the given filters
+Quadtree.prototype.remove_by_filter = function(filters) {
+  // query root to figure out what ids match
+  var ids = this.query(null, filters);
+  // kill them all
+  ids.map( function(id) { this.remove_by_id(id); }, this );  
+};
+
 // remove all elements in a given region
 Quadtree.prototype.remove_by_region = function(region) {//, filter) {
   // query root to figure out what ids are in the passed region
-  var filter = get_region_filter(this.root, this.obj_ids);
-  var ids = this.query(region, filter);
+  var region_filter = get_region_filter(region, this.obj_ids);
+  var ids = this.query(region, [region_filter]);
   // kill them all
   ids.map( function(id) { this.remove_by_id(id); }, this );  
 };
