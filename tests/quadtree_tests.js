@@ -78,16 +78,19 @@ QUnit.test( "filter_region tests", function( assert ) {
   var r4 = {x:10, y:10, w:1, h:1};
   var r5 = {x:20, y:-1000, w:1, h:2000};
   var r6 = {x:500, y:500, w:1, h:1};
-  var id_to_obj = {1:r1, 2:r2, 3:r3, 4:r4, 5:r5, 6:r6};
+  var obj_ids = {1:r1, 2:r2, 3:r3, 4:r4, 5:r5, 6:r6};
   var ids = ['1', '2', '3', '4', '5', '6'];
 
-  assert.deepEqual( filter_region(ids, r1, id_to_obj),
+  var filter = get_region_filter(r1, obj_ids);
+  assert.deepEqual( ids.filter(filter),
 		    ['1', '2', '3', '4', '5'] );
 
-  assert.deepEqual( filter_region(ids, r2, id_to_obj),
+  filter = get_region_filter(r2, obj_ids);
+  assert.deepEqual( ids.filter(filter),
 		    ['1', '2', '3', '4'] );
-
-  assert.deepEqual( filter_region(ids, r6, id_to_obj),
+  
+  filter = get_region_filter(r6, obj_ids);
+  assert.deepEqual( ids.filter(filter),
 		    ['6'] );
 });
 
@@ -106,12 +109,13 @@ QUnit.test( "filter_region adjacency tests", function( assert ) {
   var rbl = {x:9,  y:11, w:1, h:1};
   var rbr = {x:11, y:11, w:1, h:1};
 
-  var id_to_obj = {1:r,
-		   2:ra, 3:rb, 4:rl, 5:rr,
-		   6:rtl, 7:rtr, 8:rbl, 8:rbr};
+  var obj_ids = {1:r,
+		 2:ra, 3:rb, 4:rl, 5:rr,
+		 6:rtl, 7:rtr, 8:rbl, 8:rbr};
   var ids = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
-  assert.deepEqual( filter_region(ids, r, id_to_obj),
+  var filter = get_region_filter(r, obj_ids);
+  assert.deepEqual( ids.filter(filter),
 		    ['1'] );
 });
 
@@ -344,10 +348,10 @@ QUnit.test( "remove_by_region tests", function( assert ) {
   qt.insert(r6);
 
   qt.remove_by_region({x:19, y:-1000, w:2, h:1});
-  assert.deepEqual( qt.query(), ['1', '2', '3', '4', '6']);
-  
+  assert.deepEqual( qt.query(), ['1', '2', '3', '4', '6'] );
+
   qt.remove_by_region({x:-500, y:-500, w:2, h:1});
-  assert.deepEqual( qt.query(), ['1', '2', '3', '4']);
+  assert.deepEqual( qt.query(), ['1', '2', '3', '4'] );
 });
 
 // test remove_by_id
@@ -400,7 +404,7 @@ QUnit.test( "stress tests", function( assert ) {
   var qt = new Quadtree({x:0, y:0, w:1, h:1, max_objects:150, max_level:10});
   var i=0, matches=[];
 
-  for (; i < 10000; i++) {
+  for (; i < 1000; i++) {
     matches.push(String(i));
     var region = {x: Math.random()*w + x, y: Math.random()*h + y,
 		  w: Math.random()*1000, h: Math.random()*1000,
@@ -432,7 +436,7 @@ QUnit.test( "query after refine test", function( assert ) {
   qt.insert(r4);
 
   // query top-left
-  assert.deepEqual( qt.query({x:20, y:20, w:1, h:1}, false),
+  assert.deepEqual( qt.query({x:10, y:10, w:1, h:1}),
 		    ['0'] );
   
 });

@@ -1,7 +1,6 @@
 "use strict";
 
 /*
-- remember dependency on jquery!! should note in repo
 - add to query - extra argument that allows query to stop when size of nodes
   gets too small (i.e. things would be too small to render anyway) so will have
   less scale-based filtering to do
@@ -21,11 +20,16 @@
   also split out quadtree and QNode and 'helper' code? maybe more annoying...
 - fully taken advantage of objects being in graph only once?
 - sure obj_to_node being used correctly?
-- filter_region still very slow
+- overlaps still very slow
 - need to worry about overlaps testing and non-integer region coords?
 - weakness of store-in-leaves - stuff on boundaries gets 'picked up' in queries
   any way to ignore? I guess won't be a big problem because you filter them
   out...
+- just do filter by default???
+- maybe to solve annoying default-filter problem - just allow passing
+  filters to quadtree when initializing, and by default include a region
+  filter unless user requests not to!!!
+- TODO: allow to terminate if filter says so...
 */
 
 function Quadtree(args) {
@@ -61,13 +65,17 @@ Quadtree.prototype.insert = function(obj) {
 // return a list of objects located in the given region
 Quadtree.prototype.query = function(region, filter) {
   // if no region provided, query entire quadtree
-  filter = typeof filter !== 'undefined' ? filter : true;
   region = region || {x:this.root.x, y:this.root.y,
 		      w:this.root.w, h:this.root.h};
+  filter = typeof filter !== 'undefined' ? filter : function() {return true;};
+  
+  // by default, add filter by region
+  var region_filter = get_region_filter(region, this.obj_ids);
+  var filter2 = function(id) { return filter(id) && region_filter(id); };
   
   // for mouse clicks...need to scale! 1x1 will be huge zoomed in
   //region.w = region.w || 1; region.h = region.h || 1;
-  return this.root.query(region, filter);
+  return this.root.query(region, filter2);
 }
 
 // remove all references to the object with the given id
@@ -87,9 +95,10 @@ Quadtree.prototype.remove_by_id = function(id) {
 };
 
 // remove all elements in a given region
-Quadtree.prototype.remove_by_region = function(region) {
+Quadtree.prototype.remove_by_region = function(region) {//, filter) {
   // query root to figure out what ids are in the passed region
-  var ids = this.query(region);
+  var filter = get_region_filter(this.root, this.obj_ids);
+  var ids = this.query(region, filter);
   // kill them all
   ids.map( function(id) { this.remove_by_id(id); }, this );  
 };
@@ -229,7 +238,7 @@ QNode.prototype.expand = function(id) {
 QNode.prototype.query = function(region, filter) {
   // set defaults
   region = region || {x:this.x, y:this.y, w:this.w, h:this.h};
-  filter = typeof filter !== 'undefined' ? filter : true;
+  filter = typeof filter !== 'undefined' ? filter : function() { return true; };
   
   // don't return anything if outside query region
   if (!this.overlaps(region)) return [];
@@ -239,10 +248,9 @@ QNode.prototype.query = function(region, filter) {
     function(c) { return c.query(region, filter); }
   ));
 
-  // otherwise add on own objects
-  if (!filter) return ids.concat(this.get_ids());
-  return ids.concat(filter_region(this.get_ids(), region,
-				  this.quadtree.obj_ids));
+  // filter and add on own objects
+  //filter = get_region_filter(region, this.quadtree.obj_ids);
+  return ids.concat(this.get_ids().filter(filter));
 };
 
 // see if passed region overlaps this node
@@ -366,19 +374,18 @@ function overlaps(r1, r2) {
   var r1x2 = r1.x+r1.w, r1y2 = r1.y+r1.h;
   var r2x2 = r2.x+r2.w, r2y2 = r2.y+r2.h;
   return r1.x < r2x2 && r1x2 > r2.x && r1.y < r2y2 && r1y2 > r2.y;
-};
+}
 
 // check if AABB r1 contains AABB r2 (allowing edge contact)
 function contains(r1, r2) {
   return r1.x <= r2.x && r1.y <= r2.y &&
     r1.x+r1.w >= r2.x+r2.w &&
     r1.y+r1.h >= r2.y+r2.h;
-};
+}
 
-// return object of ids internal to passed region
-function filter_region(ids, region, obj_ids) {
-  return ids.filter( function(id) { return overlaps(region, obj_ids[id]); });
-};
+function get_region_filter(region, obj_ids) {
+  return function(id) { return overlaps(region, obj_ids[id]); };
+}
 
 function get_child_regions(region) {
   var hw = region.w/2, hh = region.h/2;
