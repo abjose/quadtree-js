@@ -175,13 +175,14 @@ QNode.prototype.refine = function() {
   this.children[3] = new QNode({x:c[4].x, y:c[4].y, w:c[4].w, h:c[4].h,
 				level:this.level+1, parent:this,
 				quadtree:this.quadtree});
+  // save current refineable ids
+  var refineable_ids = Object.keys(this.ids.refineable);
   
-  // now that node has children, give them refineable objects
-  Object.keys(this.ids.refineable).map( function(id) {
-    this.insert(id); }, this);
-
   // clear own ids
   this.clear_refineable();
+  
+  // now that node has children, give them refineable objects
+  refineable_ids.map( function(id) { this.insert(id); }, this);
 };
 
 // merge children into self (if necessary)
