@@ -1,7 +1,6 @@
 "use strict";
 
 /*
-- remember dependency on jquery!! should note in repo
 - add to query - extra argument that allows query to stop when size of nodes
   gets too small (i.e. things would be too small to render anyway) so will have
   less scale-based filtering to do
@@ -26,6 +25,12 @@
 - weakness of store-in-leaves - stuff on boundaries gets 'picked up' in queries
   any way to ignore? I guess won't be a big problem because you filter them
   out...
+- IMPLEMENT FILTERING!!!!!
+*/
+
+/* Filtering todo
+- 
+
 */
 
 function Quadtree(args) {
