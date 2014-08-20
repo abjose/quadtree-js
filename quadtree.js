@@ -1,10 +1,6 @@
 "use strict";
 
 /*
-- remember dependency on jquery!! should note in repo
-- add to query - extra argument that allows query to stop when size of nodes
-  gets too small (i.e. things would be too small to render anyway) so will have
-  less scale-based filtering to do
 - add stuff to help with updating objects - can just pass object (or ID), 
   will look up relevant node, figure out if need to change, then...just
   delete and reinsert if so?
@@ -15,13 +11,12 @@
 - consider adding coarsen-topdown back in
 - allow quadtree to shrink if don't need to be as large as it is? i.e. have a 
   spatial "contract" in addition to "expand"
-- DO THIS should allow functions to take lists of things and/or multiple args
-- search for and complete TODOs
+- should allow functions to take lists of things and/or multiple args
 - clean up node addition/deletion in general - lots of repetition right now
   also split out quadtree and QNode and 'helper' code? maybe more annoying...
 - fully taken advantage of objects being in graph only once?
 - sure obj_to_node being used correctly?
-- filter_region still very slow
+- overlaps still very slow
 - need to worry about overlaps testing and non-integer region coords?
 - weakness of store-in-leaves - stuff on boundaries gets 'picked up' in queries
   any way to ignore? I guess won't be a big problem because you filter them
@@ -30,9 +25,12 @@
 
 function Quadtree(args) {
   // required: x, y, w, h
-  // optional: max_objects, max_level
+  // optional: max_objects, max_level, filters
   this.max_objects = args.max_objects || 5; //100;
   this.max_level   = args.max_level   || 10;
+
+  // initialize default filters
+  this.filters = args.filters || [];
 
   // id-to-object mapping - necessary?
   this.obj_ids     = {};
@@ -59,15 +57,19 @@ Quadtree.prototype.insert = function(obj) {
 };
 
 // return a list of objects located in the given region
-Quadtree.prototype.query = function(region, filter) {
+Quadtree.prototype.query = function(region, filters, skip_region_filter) {
   // if no region provided, query entire quadtree
-  filter = typeof filter !== 'undefined' ? filter : true;
   region = region || {x:this.root.x, y:this.root.y,
 		      w:this.root.w, h:this.root.h};
+  filters = filters || [];
+  skip_region_filter = skip_region_filter || false;
   
-  // for mouse clicks...need to scale! 1x1 will be huge zoomed in
-  //region.w = region.w || 1; region.h = region.h || 1;
-  return this.root.query(region, filter);
+  // by default, add filter by region
+  if (!skip_region_filter)
+    filters.push(get_region_filter(region, this.obj_ids));
+
+  // run the query
+  return this.root.query(region, this.filters.concat(filters));
 }
 
 // remove all references to the object with the given id
@@ -86,10 +88,19 @@ Quadtree.prototype.remove_by_id = function(id) {
   delete this.obj_ids[id];
 };
 
+// remove all elements returned by a query with the given filters
+Quadtree.prototype.remove_by_filter = function(filters) {
+  // query root to figure out what ids match
+  var ids = this.query(null, filters);
+  // kill them all
+  ids.map( function(id) { this.remove_by_id(id); }, this );  
+};
+
 // remove all elements in a given region
-Quadtree.prototype.remove_by_region = function(region) {
+Quadtree.prototype.remove_by_region = function(region) {//, filter) {
   // query root to figure out what ids are in the passed region
-  var ids = this.query(region);
+  var region_filter = get_region_filter(region, this.obj_ids);
+  var ids = this.query(region, [region_filter]);
   // kill them all
   ids.map( function(id) { this.remove_by_id(id); }, this );  
 };
@@ -172,13 +183,14 @@ QNode.prototype.refine = function() {
   this.children[3] = new QNode({x:c[4].x, y:c[4].y, w:c[4].w, h:c[4].h,
 				level:this.level+1, parent:this,
 				quadtree:this.quadtree});
+  // save current refineable ids
+  var refineable_ids = Object.keys(this.ids.refineable);
   
-  // now that node has children, give them refineable objects
-  Object.keys(this.ids.refineable).map( function(id) {
-    this.insert(id); }, this);
-
   // clear own ids
   this.clear_refineable();
+  
+  // now that node has children, give them refineable objects
+  refineable_ids.map( function(id) { this.insert(id); }, this);
 };
 
 // merge children into self (if necessary)
@@ -186,8 +198,10 @@ QNode.prototype.coarsen = function() {
   // don't need to coarsen if no children
   if (this.children.length === 0) return;
   
-  // grab ids contained by (only) children
-  var ids = this.query(null, null, true);
+  // grab ids contained by children
+  var ids = [].concat.apply([], this.children.map(
+    function(c) { return c.query(); }
+  ));
   
   // do we need to coarsen?
   if (ids.length <= this.quadtree.max_objects) {
@@ -224,27 +238,22 @@ QNode.prototype.expand = function(id) {
 };
 
 // return a list of objects located in the given region
-QNode.prototype.query = function(region, filter, children_only) {
-  // set defaults
-  region = region || {x:this.x, y:this.y, w:this.w, h:this.h};
-  filter = typeof filter !== 'undefined' ? filter : true;
-  children_only = typeof children_only !== 'undefined' ? filter : false;
+QNode.prototype.query = function(region, filters) {
+  region  = region || {x:this.x, y:this.y, w:this.w, h:this.h};
+  filters = filters || [];
   
   // don't return anything if outside query region
   if (!this.overlaps(region)) return [];
 
-  // query children
-  var ids = [].concat.apply([], this.children.map(
-    function(c) { return c.query(region, filter); }
-  ));
-
-  // don't add on own ids if children_only
-  if (children_only) return ids;
+  // get own objects
+  var ids = node_filter(this.get_ids(), filters);
+  // interrupt query if node_filter returns null
+  if (ids === null) return [];
   
-  // otherwise add on own objects
-  if (!filter) return ids.concat(this.get_ids());
-  return ids.concat(filter_region(this.get_ids(), region,
-				  this.quadtree.obj_ids));
+  // otherwise, query children and return
+  return [].concat.apply(ids, this.children.map(
+    function(c) { return c.query(region, filters); }
+  ));
 };
 
 // see if passed region overlaps this node
@@ -368,19 +377,55 @@ function overlaps(r1, r2) {
   var r1x2 = r1.x+r1.w, r1y2 = r1.y+r1.h;
   var r2x2 = r2.x+r2.w, r2y2 = r2.y+r2.h;
   return r1.x < r2x2 && r1x2 > r2.x && r1.y < r2y2 && r1y2 > r2.y;
-};
+}
 
 // check if AABB r1 contains AABB r2 (allowing edge contact)
 function contains(r1, r2) {
   return r1.x <= r2.x && r1.y <= r2.y &&
     r1.x+r1.w >= r2.x+r2.w &&
     r1.y+r1.h >= r2.y+r2.h;
-};
+}
 
-// return object of ids internal to passed region
-function filter_region(ids, region, obj_ids) {
-  return ids.filter( function(id) { return overlaps(region, obj_ids[id]); });
-};
+// filter queries by whether they're in the given region
+function get_region_filter(region, obj_ids) {
+  return function(id) { return overlaps(region, obj_ids[id]); };
+}
+
+// stop query if nodes are getting too small
+function get_depth_filter(side_length, node_ids, obj_to_node) {
+  return function(id) {
+    var node = node_ids[obj_to_node[id]];
+    console.log(node);
+    return (node.w <= side_length && node.h <= side_length) ? null : true;
+  };
+}
+
+// filter function that returns a filtered array or null, given an array to
+// to filter 'arr' and a list of filters (will be passed elemend, index, array)
+// if a filter returns null, query stops traversing the relevant branch
+// (can use to stop a query before it reaches the bottom of the tree)
+function node_filter(arr, filters) {
+  var out = [], result = null, should_keep = true;
+  filters = filters || [];
+  
+  for (var i=0; i < arr.length; i++) {
+    // initialize flag for keeping this element
+    should_keep = true;
+    // iterate over filters
+    for (var f=0; f < filters.length; f++) {
+      // see what filter thinks
+      result = filters[f](arr[i], i, arr);
+      // if false, stop iterating and don't keep this element
+      if (result === false) { should_keep = false; break; }
+      // if null, halt query
+      if (result === null) return null;
+    }
+    // keep if all the filters wanted it
+    if (should_keep) out.push(arr[i]);
+  }
+  
+  return out;
+}
 
 function get_child_regions(region) {
   var hw = region.w/2, hh = region.h/2;
