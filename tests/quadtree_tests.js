@@ -1,12 +1,12 @@
 
 /* TESTS TODO/NOTES
-- add 'stress tests' for adding lots of nodes (ideally compare to other
-  quadtree libs before DELETING MERCILESSLY)
 - make sure proper number of subtrees after inserting and removing lots of nodes
 - WEIRD BEHAVIOR for very large enlarges
 - verify doesn't exceed max depth or max objects under normal insertion
 - test get_accepting_child
 - test get_ids
+- do more thorough tests of consistency of obj_ids, node_ids, and obj_to_node!!
+- test remove_by_filter
 */
 
 /* test overlaps */
@@ -400,6 +400,7 @@ QUnit.test( "clear tests", function( assert ) {
 
 // stress tests
 QUnit.test( "stress tests", function( assert ) {
+  // TODO: should also do deletions here
   var x=-2000, y=-2000, w=4000, h=4000;
   var qt = new Quadtree({x:0, y:0, w:1, h:1, max_objects:150, max_level:10});
   var i=0, matches=[];
@@ -438,5 +439,57 @@ QUnit.test( "query after refine test", function( assert ) {
   // query top-left
   assert.deepEqual( qt.query({x:10, y:10, w:1, h:1}),
 		    ['0'] );
+});
+
+// query with null-returning filters
+QUnit.test( "query with null-filters test", function( assert ) {
+  var qt = new Quadtree({x:0, y:0, w:100, h:100, max_objects:1});
+
+  // make filter that returns null if object's id is 0
+  var skip_0 = function(id) { return id === '0' ? null : true; };
+  // insert a few objects, including a few in the neighborhood of 0th object
+  var r1 = {id:0, x:10, y:10, w:1, h:1};
+  var r2 = {id:1, x:10, y:10, w:1, h:1};
+  var r3 = {id:2, x:10, y:10, w:1, h:1};
+  var r4 = {id:3, x:10, y:10, w:1, h:1};
+  var r5 = {id:4, x:60, y:10, w:1, h:1};
+  var r6 = {id:5, x:10, y:60, w:1, h:1};
+  var r7 = {id:6, x:60, y:60, w:1, h:1};
+  qt.insert(r1);
+  qt.insert(r2);
+  qt.insert(r3);
+  qt.insert(r4);
+  qt.insert(r5);
+  qt.insert(r6);
+  qt.insert(r7);
+
+  // query should skip other nodes in 0's neighorhood
+  assert.deepEqual( qt.query(null, [skip_0]),
+		    ['4', '5', '6'] );
+
+  // test get_depth_filter
+  var side_length = 25; // half max size
+  var depth_filter = get_depth_filter(side_length, qt.node_ids, qt.obj_to_node);
+  assert.deepEqual( qt.query(null, [depth_filter]),
+		    ['4', '5', '6'] );
   
+});
+
+// node_filter tests
+QUnit.test( "node_filter tests", function( assert ) {
+  // test proper filtering
+  var arr = [1,2,3,4,5,6,7];
+  var f1 = function(e) {return e > 3};
+  var f2 = function(e) {return e < 5};
+  assert.deepEqual( node_filter(arr, [f1, f2]),
+		    [4] );
+
+  // everything should pass if no filters
+  assert.deepEqual( node_filter(arr),
+		    [1,2,3,4,5,6,7] );
+  
+  // test ability to return null
+  var f3 = function() { return null; };
+  assert.deepEqual( node_filter(arr, [f1, f2, f3]),
+		    null );
 });
