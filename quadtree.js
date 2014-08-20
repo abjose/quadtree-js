@@ -378,8 +378,45 @@ function contains(r1, r2) {
     r1.y+r1.h >= r2.y+r2.h;
 }
 
+// filter queries by whether they're in the given region
 function get_region_filter(region, obj_ids) {
   return function(id) { return overlaps(region, obj_ids[id]); };
+}
+
+// stop query if nodes are getting too small
+function get_depth_filter(side_length, node_ids, obj_to_node) {
+  return function(id) {
+    var node = node_ids[obj_to_node[id]];
+    console.log(node);
+    return (node.w <= side_length && node.h <= side_length) ? null : true;
+  };
+}
+
+// filter function that returns a filtered array or null, given an array to
+// to filter 'arr' and a list of filters (will be passed elemend, index, array)
+// if a filter returns null, query stops traversing the relevant branch
+// (can use to stop a query before it reaches the bottom of the tree)
+function node_filter(arr, filters) {
+  var out = [], result = null, should_keep = true;
+  filters = filters || [];
+  
+  for (var i=0; i < arr.length; i++) {
+    // initialize flag for keeping this element
+    should_keep = true;
+    // iterate over filters
+    for (var f=0; f < filters.length; f++) {
+      // see what filter thinks
+      result = filters[f](arr[i], i, arr);
+      // if false, stop iterating and don't keep this element
+      if (result === false) { should_keep = false; break; }
+      // if null, halt query
+      if (result === null) return null;
+    }
+    // keep if all the filters wanted it
+    if (should_keep) out.push(arr[i]);
+  }
+  
+  return out;
 }
 
 function get_child_regions(region) {
