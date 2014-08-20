@@ -32,9 +32,9 @@ Make a quadtree:
                            y: 0,
                            w: 100,
                            h: 100,
-                           max_objects: 150, // optional
-                           max_levels:  10;  // optional
-                           });
+                           max_objects: 150,   // optional
+                           max_levels:  10,    // optional
+			   filters:     [] }); // optional
 
 Insert an AABB:
 
@@ -46,21 +46,37 @@ Insert an AABB:
 
 Query the quadtree:
 
-    qt.query(); // queries the entire quadtree
+    // query the entire quadtree
+    qt.query(); 
 
+    // query a specific region
     qt.query({x: 0,
               y: 0
               w: 10,
               h: 10});
 
+    // query a region and filter results so only get the node with id:0
+    qt.query({x: 0, y:0, w:100, y:100},
+             function(id) { return id === '0'; } );
+
+    // query a region and stop traversing the tree anywhere id:0 is encountered
+    qt.query(null
+             function(id) { return (id === '0') ? null : true; } );
+
+    
 Remove objects from the quadtree:
 
-    qt.remove_by_id('test'); // removes the object with id 'test'
+    // removes the object with id 'test'
+    qt.remove_by_id('test'); 
 
+    // remove objects overlapping a region
     qt.remove_by_region({x: 0,
                          y: 0,
                          w: 10,
-                         h: 10}); // remove objects overlapping a region
+                         h: 10}); 
+
+    // remove objects using a filter
+    qt.remove_by_filter(function(id) { return id > 400; });
 
 Clear the quadtree:
 
