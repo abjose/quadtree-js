@@ -8,8 +8,8 @@ This is a slightly optimized javascript implementation of a [quadtree](http://en
 along with a few additional features:
 
 * **can 'coarsen'** (when you remove objects, the quadtree handles updating its structure rather than needing to be rebuilt each time)
-* **filter nodes during query** (can exclude nodes from results or even stop searching down a particular branch of the tree using filters)
-* **filters by search region by default** (only returns objects you ask for, rather than every object in every overlapping node)
+* **can filter nodes during query** (can exclude nodes from results or even stop searching down a particular branch of the tree using filters)
+* **constrains results to search region by default** (only returns objects you ask for, rather than every object in every overlapping node)
 * **constant-time object-to-node lookups** (makes deletion fast, and useful if objects are moving around within the quadtree)
 * **objects are kept at their minimal containing node** (large objects are typically 'broken down' to be stored in the leaves of the tree, but this can make things extremely slow - instead, objects are stored only once in the tree, at the smallest node that fully contains them)
 * **expands to accommodate objects external to tree bounds**
