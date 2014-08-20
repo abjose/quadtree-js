@@ -57,19 +57,19 @@ Quadtree.prototype.insert = function(obj) {
 };
 
 // return a list of objects located in the given region
-Quadtree.prototype.query = function(region, filter) {
+Quadtree.prototype.query = function(region, filters, skip_region_filter) {
   // if no region provided, query entire quadtree
   region = region || {x:this.root.x, y:this.root.y,
 		      w:this.root.w, h:this.root.h};
-  filter = typeof filter !== 'undefined' ? filter : function() {return true;};
+  filters = filters || [];
+  skip_region_filter = skip_region_filter || false;
   
   // by default, add filter by region
-  var region_filter = get_region_filter(region, this.obj_ids);
-  var filter2 = function(id) { return filter(id) && region_filter(id); };
-  
-  // for mouse clicks...need to scale! 1x1 will be huge zoomed in
-  //region.w = region.w || 1; region.h = region.h || 1;
-  return this.root.query(region, filter2);
+  if (!skip_region_filter)
+    filters.push(get_region_filter(region, this.obj_ids));
+
+  // run the query
+  return this.root.query(region, this.filters.concat(filters));
 }
 
 // remove all references to the object with the given id
@@ -229,22 +229,22 @@ QNode.prototype.expand = function(id) {
 };
 
 // return a list of objects located in the given region
-QNode.prototype.query = function(region, filter) {
-  // set defaults
-  region = region || {x:this.x, y:this.y, w:this.w, h:this.h};
-  filter = typeof filter !== 'undefined' ? filter : function() { return true; };
+QNode.prototype.query = function(region, filters) {
+  region  = region || {x:this.x, y:this.y, w:this.w, h:this.h};
+  filters = filters || [];
   
   // don't return anything if outside query region
   if (!this.overlaps(region)) return [];
 
-  // query children
-  var ids = [].concat.apply([], this.children.map(
-    function(c) { return c.query(region, filter); }
+  // get own objects
+  var ids = node_filter(this.get_ids(), filters);
+  // interrupt query if node_filter returns null
+  if (ids === null) return [];
+  
+  // otherwise, query children and return
+  return [].concat.apply(ids, this.children.map(
+    function(c) { return c.query(region, filters); }
   ));
-
-  // filter and add on own objects
-  //filter = get_region_filter(region, this.quadtree.obj_ids);
-  return ids.concat(this.get_ids().filter(filter));
 };
 
 // see if passed region overlaps this node
