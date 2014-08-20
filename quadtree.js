@@ -21,18 +21,16 @@
 - weakness of store-in-leaves - stuff on boundaries gets 'picked up' in queries
   any way to ignore? I guess won't be a big problem because you filter them
   out...
-- just do filter by default???
-- maybe to solve annoying default-filter problem - just allow passing
-  filters to quadtree when initializing, and by default include a region
-  filter unless user requests not to!!!
-- TODO: allow to terminate if filter says so...
 */
 
 function Quadtree(args) {
   // required: x, y, w, h
-  // optional: max_objects, max_level
+  // optional: max_objects, max_level, filters
   this.max_objects = args.max_objects || 5; //100;
   this.max_level   = args.max_level   || 10;
+
+  // initialize default filters
+  this.filters = args.filters || [];
 
   // id-to-object mapping - necessary?
   this.obj_ids     = {};
